@@ -1,0 +1,575 @@
+<!-- DEBUG: is_authenticated = {{ user.is_authenticated }} -->
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ParlorPal - AI Marketing for All Businesses{% endblock %}</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link href="{% static 'core/style.css' %}" rel="stylesheet">
+    <script src="{% static 'core/script.js' %}"></script>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Global Dark Mode Toggle Button -->
+    <button class="dark-mode-toggle" id="darkModeToggle" title="Toggle Dark Mode">
+        <i class="bi bi-moon-stars-fill" id="darkModeIcon"></i>
+    </button>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top custom-navbar">
+        <div class="container">
+            <a class="navbar-brand" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">
+                <i class="bi bi-graph-up-arrow me-2"></i>
+                <span class="brand-text">ParlorPal</span>
+            </a>
+
+            {% comment %} <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="bi bi-scissors me-2"></i>
+                <span class="brand-text">ParlorPal</span>
+            </a> {% endcomment %}
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <!-- Dashboard link for all authenticated users -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                                <i class="bi bi-house-door me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'chatbot' or request.resolver_match.url_name == 'ai_suggestions' %}active{% endif %}" href="#" id="aiDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-magic me-1"></i>AI Assistant
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="aiDropdown">
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'chatbot' %}active{% endif %}" href="{% url 'chatbot' %}"><i class="bi bi-robot me-1"></i>Chatbot</a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'ai_suggestions' %}active{% endif %}" href="{% url 'ai_suggestions' %}"><i class="bi bi-lightbulb me-1"></i>AI Content Generator</a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'email_subjects' %}active{% endif %}" href="{% url 'email_subjects' %}"><i class="bi bi-envelope me-1"></i>Email Subject Line Generator</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'generate_poster' %}active{% endif %}" href="{% url 'generate_poster' %}">
+                                <i class="bi bi-image me-1"></i>Generate Poster
+                            </a>
+                        </li>
+
+                        <!-- Admin Tools -->
+                        {% if user.is_staff %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'manage_festivals' or request.resolver_match.url_name == 'email_templates' or request.resolver_match.url_name == 'preview_verification_email' or request.resolver_match.url_name == 'preview_festival_notification' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-tools me-1"></i>Admin Tools
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'manage_festivals' %}active{% endif %}" href="{% url 'manage_festivals' %}">
+                                    <i class="bi bi-calendar-event me-1"></i>Manage Festivals
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'email_templates' %}active{% endif %}" href="{% url 'email_templates' %}">
+                                    <i class="bi bi-collection me-1"></i>Email Templates
+                                </a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'preview_verification_email' %}active{% endif %}" href="{% url 'preview_verification_email' %}">
+                                    <i class="bi bi-envelope-check me-1"></i>Verification Email
+                                </a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'preview_festival_notification' %}active{% endif %}" href="{% url 'preview_festival_notification' %}">
+                                    <i class="bi bi-bell me-1"></i>Festival Notification
+                                </a></li>
+                            </ul>
+                        </li>
+                        {% endif %}
+
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'feedback' %}active{% endif %}" href="{% url 'feedback' %}">
+                                <i class="bi bi-chat-heart me-1"></i>Feedback
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" href="{% url 'profile' %}">
+                                <i class="bi bi-person-circle me-1"></i>Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">
+                                <i class="bi bi-house-door me-1"></i>Home
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}" href="{% url 'login' %}">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link auth-btn {% if request.resolver_match.url_name == 'register' %}active{% endif %}" href="{% url 'register' %}">
+                                <i class="bi bi-person-plus me-1"></i>Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Floating Chatbot Widget (for logged-in users) -->
+    {% if user.is_authenticated %}
+    <style>
+        #floatingChatbotBtn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1050;
+            background: linear-gradient(135deg, #7c3aed, #818cf8);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            box-shadow: 0 4px 16px rgba(60,60,120,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+        }
+        #floatingChatbotBtn:hover {
+            box-shadow: 0 8px 24px rgba(60,60,120,0.18);
+        }
+        #floatingChatbotWindow {
+            position: fixed;
+            bottom: 5.5rem;
+            right: 2rem;
+            z-index: 1051;
+            width: 340px;
+            height: 450px;
+            max-width: 95vw;
+            max-height: 80vh;
+            min-width: 280px;
+            min-height: 300px;
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(60,60,120,0.18);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            resize: both;
+        }
+        .chatbot-resize-handle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 32px;
+            height: 32px;
+            cursor: nwse-resize;
+            z-index: 10;
+            background: rgba(124, 58, 237, 0.25);
+            border-bottom-right-radius: 0.5rem;
+            transition: background 0.2s;
+        }
+        .chatbot-resize-handle:hover {
+            background: rgba(124, 58, 237, 0.35);
+        }
+        .chatbot-resize-handle::after {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 16px;
+            height: 16px;
+            border-left: 3px solid #7c3aed;
+            border-top: 3px solid #7c3aed;
+            opacity: 1;
+        }
+        #floatingChatbotHeader {
+            background: linear-gradient(135deg, #7c3aed, #818cf8);
+            color: #fff;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        #floatingChatbotHeader .expand-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        #floatingChatbotBody {
+            background: #f8fafc;
+            padding: 1rem;
+            flex: 1;
+            overflow-y: auto;
+            font-size: 0.98rem;
+        }
+        #floatingChatbotFooter {
+            background: #f3f4f6;
+            padding: 0.5rem 0.75rem;
+        }
+        .mini-chat-row {
+            display: flex;
+            margin-bottom: 0.4rem;
+        }
+        .mini-chat-bubble {
+            padding: 0.5rem 0.9rem;
+            border-radius: 1.1rem;
+            max-width: 80%;
+            white-space: pre-line;
+            word-break: break-word;
+            font-size: 0.97rem;
+            line-height: 1.4;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            animation: fadeIn 0.3s;
+        }
+        .mini-chat-row.user { justify-content: flex-end; }
+        .mini-chat-row.bot { justify-content: flex-start; }
+        .mini-chat-bubble.user {
+            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+            color: #3730a3;
+        }
+        .mini-chat-bubble.bot {
+            background: #f3f4f6;
+            color: #111827;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: none; }
+        }
+    </style>
+    <button id="floatingChatbotBtn" title="Ask ParlorPal Assistant">
+        <i class="bi bi-robot"></i>
+    </button>
+    <div id="floatingChatbotWindow">
+        <div id="floatingChatbotHeader">
+            <span><i class=""></i> ____ParlorPal Assistant____</span>
+            <div>
+                <button class="expand-btn" title="Open full chat" onclick="window.location.href='{% url 'chatbot' %}'"><i class="bi bi-arrows-fullscreen"></i></button>
+                <button class="expand-btn" title="Close" onclick="toggleFloatingChatbot(false)"><i class="bi bi-x-lg"></i></button>
+            </div>
+        </div>
+        <div id="floatingChatbotBody"></div>
+        <div id="floatingChatbotFooter">
+            <form id="floatingChatbotForm" class="d-flex align-items-center" autocomplete="off">
+                <input type="text" id="floatingChatbotInput" class="form-control form-control-sm me-2" placeholder="Ask about ParlorPal..." required>
+                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-send"></i></button>
+            </form>
+            <div id="floatingChatbotLoading" class="text-center mt-1" style="display:none;">
+                <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+                <span class="ms-1 text-muted">AI is thinking...</span>
+            </div>
+            <div id="floatingChatbotError" class="alert alert-danger mt-1 py-1 px-2" style="display:none;font-size:0.95em;"></div>
+        </div>
+        <div class="chatbot-resize-handle"></div>
+    </div>
+    <script>
+    function toggleFloatingChatbot(show) {
+        const win = document.getElementById('floatingChatbotWindow');
+        if (show) {
+            // Restore saved size
+            const savedWidth = localStorage.getItem('chatbotWidth');
+            const savedHeight = localStorage.getItem('chatbotHeight');
+            if (savedWidth) win.style.width = savedWidth;
+            if (savedHeight) win.style.height = savedHeight;
+        }
+        win.style.display = show ? 'flex' : 'none';
+    }
+    
+    // Resize functionality
+    (function() {
+        const chatWindow = document.getElementById('floatingChatbotWindow');
+        const resizeHandle = chatWindow.querySelector('.chatbot-resize-handle');
+        let isResizing = false;
+        let startX, startY, startWidth, startHeight, startBottom, startRight;
+        
+        function startResize(e) {
+            isResizing = true;
+            startX = e.clientX || e.touches[0].clientX;
+            startY = e.clientY || e.touches[0].clientY;
+            startWidth = parseInt(getComputedStyle(chatWindow).width, 10);
+            startHeight = parseInt(getComputedStyle(chatWindow).height, 10);
+            
+            // Get current position
+            const rect = chatWindow.getBoundingClientRect();
+            startBottom = window.innerHeight - rect.bottom;
+            startRight = window.innerWidth - rect.right;
+            
+            e.preventDefault();
+        }
+        
+        function doResize(e) {
+            if (!isResizing) return;
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            // Calculate delta (how much mouse moved)
+            const deltaX = startX - clientX; // Reversed for top-left
+            const deltaY = startY - clientY; // Reversed for top-left
+            
+            const newWidth = startWidth + deltaX;
+            const newHeight = startHeight + deltaY;
+            
+            // Apply constraints
+            if (newWidth >= 280 && newWidth <= window.innerWidth * 0.95) {
+                chatWindow.style.width = newWidth + 'px';
+                chatWindow.style.right = startRight + 'px';
+            }
+            if (newHeight >= 300 && newHeight <= window.innerHeight * 0.8) {
+                chatWindow.style.height = newHeight + 'px';
+                chatWindow.style.bottom = startBottom + 'px';
+            }
+        }
+        
+        function stopResize() {
+            if (isResizing) {
+                isResizing = false;
+                // Save size preference
+                localStorage.setItem('chatbotWidth', chatWindow.style.width);
+                localStorage.setItem('chatbotHeight', chatWindow.style.height);
+            }
+        }
+        
+        // Mouse events
+        resizeHandle.addEventListener('mousedown', startResize);
+        document.addEventListener('mousemove', doResize);
+        document.addEventListener('mouseup', stopResize);
+        
+        // Touch events for mobile
+        resizeHandle.addEventListener('touchstart', startResize);
+        document.addEventListener('touchmove', doResize);
+        document.addEventListener('touchend', stopResize);
+    })();
+    
+    document.getElementById('floatingChatbotBtn').onclick = function() {
+        toggleFloatingChatbot(true);
+        setTimeout(function() {
+            document.getElementById('floatingChatbotInput').focus();
+        }, 200);
+    };
+    // Hide on page load
+    toggleFloatingChatbot(false);
+
+    // Mini chat logic
+    const miniForm = document.getElementById('floatingChatbotForm');
+    const miniInput = document.getElementById('floatingChatbotInput');
+    const miniBody = document.getElementById('floatingChatbotBody');
+    const miniLoading = document.getElementById('floatingChatbotLoading');
+    const miniError = document.getElementById('floatingChatbotError');
+    
+    // Load existing conversation from sessionStorage
+    function loadChatHistory() {
+        const history = sessionStorage.getItem('chatHistory');
+        if (history) {
+            const messages = JSON.parse(history);
+            messages.forEach(msg => {
+                appendMiniMessage(msg.text, msg.sender, false);
+            });
+        }
+    }
+    
+    function saveChatHistory(text, sender) {
+        let history = sessionStorage.getItem('chatHistory');
+        history = history ? JSON.parse(history) : [];
+        history.push({ text, sender });
+        sessionStorage.setItem('chatHistory', JSON.stringify(history));
+    }
+    
+    function appendMiniMessage(text, sender, save = true) {
+        const row = document.createElement('div');
+        row.className = 'mini-chat-row ' + sender;
+        const bubble = document.createElement('div');
+        bubble.className = 'mini-chat-bubble ' + sender;
+        bubble.textContent = text;
+        row.appendChild(bubble);
+        miniBody.appendChild(row);
+        setTimeout(function() {
+            miniBody.scrollTop = miniBody.scrollHeight;
+        }, 100);
+        
+        if (save) {
+            saveChatHistory(text, sender);
+        }
+    }
+    
+    // Load chat history on widget open
+    loadChatHistory();
+    
+    // Function to extract page content (forms, inputs, buttons, etc.)
+    function extractPageContent() {
+        let content = [];
+        
+        // Get all form fields with labels
+        document.querySelectorAll('input, textarea, select').forEach(field => {
+            if (field.type !== 'hidden' && field.id !== 'floatingChatbotInput' && field.id !== 'chatInput') {
+                let label = '';
+                if (field.id) {
+                    const labelEl = document.querySelector(`label[for="${field.id}"]`);
+                    if (labelEl) label = labelEl.textContent.trim();
+                }
+                if (!label && field.placeholder) label = field.placeholder;
+                if (!label && field.name) label = field.name;
+                
+                let info = `- ${label || 'Input field'}`;
+                if (field.tagName === 'SELECT') {
+                    const options = Array.from(field.options).map(o => o.text).filter(t => t).join(', ');
+                    if (options) info += ` (options: ${options})`;
+                } else if (field.type) {
+                    info += ` (${field.type})`;
+                }
+                content.push(info);
+            }
+        });
+        
+        // Get main buttons (excluding nav/footer)
+        document.querySelectorAll('main button, .container button, .card button').forEach(btn => {
+            const text = btn.textContent.trim();
+            if (text && !text.includes('Toggle') && text.length < 50) {
+                content.push(`- Button: "${text}"`);
+            }
+        });
+        
+        // Get page heading
+        const mainHeading = document.querySelector('main h1, main h2, .container h1, .container h2');
+        if (mainHeading) {
+            content.unshift(`Page Title: ${mainHeading.textContent.trim()}`);
+        }
+        
+        return content.join('\n');
+    }
+    
+    miniForm.onsubmit = function(e) {
+        e.preventDefault();
+        const userMsg = miniInput.value.trim();
+        if (!userMsg) return;
+        appendMiniMessage(userMsg, 'user');
+        miniInput.value = '';
+        miniError.style.display = 'none';
+        miniLoading.style.display = 'block';
+        // Send AJAX request to /chatbot/ endpoint
+        fetch('{% url 'chatbot' %}', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: new URLSearchParams({ 
+                message: userMsg,
+                current_page: window.location.pathname,
+                page_content: extractPageContent()
+            })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            miniLoading.style.display = 'none';
+            if (data.success) {
+                appendMiniMessage(data.reply, 'bot');
+            } else {
+                miniError.textContent = data.error || 'Something went wrong.';
+                miniError.style.display = 'block';
+            }
+        })
+        .catch(function(err) {
+            miniLoading.style.display = 'none';
+            miniError.textContent = 'Network error. Please try again.';
+            miniError.style.display = 'block';
+        });
+    };
+    </script>
+    {% endif %}
+
+    <!-- Footer -->
+    <footer class="footer mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="brand-text">ParlorPal</h5>
+                    <p class="text-muted">AI-powered marketing solutions for businesses of all types.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted mb-0">© 2025 ParlorPal. Crafted with ❤️ for business owners.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{% static 'core/script.js' %}"></script>
+    
+    <!-- Global Dark Mode Toggle Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeIcon = document.getElementById('darkModeIcon');
+        const body = document.body;
+        
+        if (darkModeToggle && darkModeIcon) {
+            // Check for saved dark mode preference
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            
+            // Apply saved preference
+            if (isDarkMode) {
+                body.classList.add('dark-mode');
+                darkModeIcon.classList.remove('bi-moon-stars-fill');
+                darkModeIcon.classList.add('bi-sun-fill');
+            }
+            
+            // Toggle dark mode on button click
+            darkModeToggle.addEventListener('click', function() {
+                body.classList.toggle('dark-mode');
+                const isNowDark = body.classList.contains('dark-mode');
+                
+                // Update icon
+                if (isNowDark) {
+                    darkModeIcon.classList.remove('bi-moon-stars-fill');
+                    darkModeIcon.classList.add('bi-sun-fill');
+                } else {
+                    darkModeIcon.classList.remove('bi-sun-fill');
+                    darkModeIcon.classList.add('bi-moon-stars-fill');
+                }
+                
+                // Save preference
+                localStorage.setItem('darkMode', isNowDark);
+                
+                // Add animation
+                darkModeToggle.style.transform = 'rotate(360deg) scale(1.2)';
+                setTimeout(() => {
+                    darkModeToggle.style.transform = '';
+                }, 300);
+            });
+        }
+    });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
